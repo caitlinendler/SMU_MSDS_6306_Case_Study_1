@@ -363,6 +363,32 @@ Full_data %>% ggplot(aes(color = Class2, x = Ounces, y = ABV.imp.mean)) + geom_p
 
 Full_data %>% group_by(Class) %>% summarise(total = n(), mean_abv = mean(ABV.imp.mean)) %>% arrange(mean_abv)
 
+
+
+
+
+
+alcohol_cons = read.csv(file.choose())
+lookup = data.frame(abb = state.abb, State = state.name) #make a dataframe of state names and abbreviations
+#colnames(breweries2)[4] = "abb" #change column name
+alcohol_cons$State <- trimws(alcohol_cons$State, which = c("both")) #trim white space
+alcohol_cons2 = merge(alcohol_cons, lookup, by ="State") #merge datasets
+#breweries_mapdata = count(breweries3, State) #count occurance of each state
+colnames(alcohol_cons2)[2] = "Gallons" #change column name
+alcohol_cons2$Gallons = str_replace(alcohol_cons2$Gallons, "M",)
+alcohol_cons2$Gallons = as.numeric(alcohol_cons2$Gallons)
+alcohol_cons2$region <- tolower(alcohol_cons2$State) #create "region" column
+alcohol_cons2 = alcohol_cons2[-1] #remove states column
+states <- map_data("state")
+map.df <- merge(states, alcohol_cons2, by = "region", all.x = T)
+map.df <- map.df[order(map.df$order),] #sort the data
+
+ggplot(map.df, aes(x=long, y=lat, group=group)) +
+  geom_polygon(aes(fill=Gallons)) + geom_path() +
+  scale_fill_gradientn(colours=rev(heat.colors(10)),na.value="grey90") +
+  ggtitle("Total Alcohol Consumption by State") +labs(x="Longitude", y="Latitude")
+  coord_map()
+
 ```
 
 

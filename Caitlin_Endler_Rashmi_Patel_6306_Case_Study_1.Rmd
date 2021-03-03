@@ -1,0 +1,370 @@
+---
+title: "6306_Case_study_1"
+author: "Caitlin Endler and Rashmi Patel"
+date: "2/21/2021"
+output: html_document
+---
+
+
+
+!!!INTRODUCTION
+
+Import and inspect data
+
+```{r}
+library(tidyverse)
+library(GGally)
+library(class)
+library(maps)
+library(mapproj)
+
+#Read Beers.csv
+beers_data=read.csv(file.choose(), header=TRUE)
+head(beers_data)
+dim(beers_data)
+Beers=beers_data%>%rename(Beer_Name=Name)
+head(Beers)
+
+#Read Breweries.csv
+breweries_data=read.csv(file.choose(), header=TRUE)
+head(breweries_data)
+dim(breweries_data)
+Breweries=breweries_data%>%rename(Brewery_id=Brew_ID,Brewery_Name=Name)
+head(Breweries)
+```
+
+
+
+How many breweries are present in each state?
+
+```{r}
+#summarize data
+Brew=Breweries%>%group_by(State)%>%summarise(TotalBreweries=n())
+Brew
+Brew_df=as.data.frame(Brew)
+head(Brew_df)
+
+#display in a bar chart
+Brew_df%>%ggplot(aes(x=reorder(as.factor(State),-TotalBreweries),y=TotalBreweries)) +
+  geom_col(fill="sky blue",color="black")+labs(x="US 51 States",y="Number of Breweries") +
+  ggtitle("Number of Breweries in each state") +
+  theme(axis.text.x = element_text(angle = 90))
+
+#heat map
+breweries2 = read.csv(file.choose())
+lookup = data.frame(abb = state.abb, State = state.name) #make a dataframe of state names and abbreviations
+colnames(breweries2)[4] = "abb" #change column name
+breweries2$abb <- trimws(breweries2$abb, which = c("both")) #trim white space
+breweries3 = merge(breweries2, lookup, by ="abb") #merge datasets
+breweries_mapdata = count(breweries3, State) #count occurance of each state
+colnames(breweries_mapdata)[2] = "Breweries" #change column name from "n" to "breweries"
+breweries_mapdata$region <- tolower(breweries_mapdata$State) #create "region" column
+breweries_mapdata = breweries_mapdata[-1] #remove states column
+states <- map_data("state")
+map.df <- merge(states, breweries_mapdata, by = "region", all.x = T)
+map.df <- map.df[order(map.df$order),] #sort the data
+
+ggplot(map.df, aes(x=long, y=lat, group=group)) +
+  geom_polygon(aes(fill=Breweries)) + geom_path() +
+  scale_fill_gradientn(colours=rev(heat.colors(10)),na.value="grey90") +
+  ggtitle("Breweries by State") +labs(x="Longitude", y="Latitude")
+  coord_map()
+
+```
+Here is a table, a barchart, and a heat map displaying the number of breweries in each state.
+
+
+
+
+Merge the datasets
+
+```{r}
+Full_data=merge(Beers,Breweries, by="Brewery_id")
+head(Full_data)
+tail(Full_data)
+dim(Full_data)
+```
+Types of craft beers
+```{r}
+Full_data["Class"] = ifelse(str_detect(Full_data$Style,"IPA"),"IPA", 
+                      ifelse(str_detect(Full_data$Style,"Ale"),"Ale", 
+                      ifelse(str_detect(Full_data$Style,"Lager"),"Lager", 
+                      ifelse(str_detect(Full_data$Style,"Stout"),"Stout", 
+                      ifelse(str_detect(Full_data$Style,"Pilsner"),"Pilsner", 
+                      ifelse(str_detect(Full_data$Style,"Pilsener"),"Pilsner", 
+                      ifelse(str_detect(Full_data$Style,"Porter"),"Porter", 
+                      ifelse(str_detect(Full_data$Style,"APA"),"APA", 
+                      ifelse(str_detect(Full_data$Style,"Cider"),"Cider", 
+                      ifelse(str_detect(Full_data$Style,"Witbier"),"Witbier",
+                      ifelse(str_detect(Full_data$Style,"Kölsch"),"Kölsch", 
+                      ifelse(str_detect(Full_data$Style,"Fruit"),"Fruit", 
+                      ifelse(str_detect(Full_data$Style,"Hefeweizen"),"Hefeweizen", 
+                      ifelse(str_detect(Full_data$Style,"Oktoberfest"),"Oktoberfest", 
+                      ifelse(str_detect(Full_data$Style,"Bitter"),"Bitter",
+                             "Other")))))))))))))))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+Full_data%>%ggplot(aes(x = Class, fill=Class))+geom_bar()+
+  ggtitle("Distribution of Beer Classes")+coord_flip()+xlab("Class of carft beers")+ylab("Count")
+
+
+```
+1)There are 100 different style of craft beers brewed in the United States.
+2)Classes of Beer have style variants, i.e., Ales include English Pale, Irish Red, etc.
+3)When grouped into classes, IPA’s And Ales account for 64% of all craft beers.
+
+
+Address the missing values in each column
+
+```{r}
+#find out how many missing values there are in each column
+d1=sum(is.na(Full_data$ABV))
+d1#ABV has 62 NA values
+d2=sum(is.na(Full_data$IBU))
+d2#IBU has 1005 NA values
+d3=sum(is.na(Full_data$Beer_Name))
+d3
+d4=sum(is.na(Full_data$Style))
+d4
+d5=sum(is.na(Full_data$Ounces))
+d5
+d6=sum(is.na(Full_data$Brewery_Name))
+d6
+d7=sum(is.na(Full_data$City))
+d7
+d8=sum(is.na(Full_data$State))
+d8
+#Boxplot of IBU  with NA values
+NA_df_IBU=ggplot(Full_data,aes(y=reorder(Class,-IBU),x=IBU)) +
+  geom_boxplot(fill="pink",color="black") +
+  labs(y="Beer Class",x="International Bitterness Unit") +
+  ggtitle("International Bitterness Unit by class") +
+  theme(axis.text.x = element_text(angle = 90))
+
+NA_df_IBU
+#Boxplot of IBV with NA values
+NA_df_ABV=ggplot(Full_data,aes(y=reorder(Class,-ABV),x=ABV)) +
+  geom_boxplot(fill="dark green",color="black") +
+  labs(y="Beer Class",x="Alcohol by Volume") +
+  ggtitle("Alcohol by Volume by class") +
+  theme(axis.text.x = element_text(angle = 90))
+
+NA_df_ABV
+
+
+#make a new column where null ABV values now have ABV mean
+#imp = imputed
+Full_data$ABV.imp.mean =ifelse(is.na(Full_data$ABV), mean(Full_data$ABV, na.rm=TRUE), Full_data$ABV)
+head(Full_data$ABV.imp.mean)
+sum(is.na(Full_data$ABV.imp.mean)) #no more NAs
+
+
+#make a new column where null IBU values now have IBU mean
+Full_data$IBU.imp.mean = ifelse(is.na(Full_data$IBU), mean(Full_data$IBU, na.rm=TRUE), Full_data$IBU)
+head(Full_data$IBU.imp.mean)
+sum(is.na(Full_data$IBU.imp.mean)) #no more NAs
+
+
+
+Imp_df_IBU=ggplot(Full_data,aes(y=reorder(Class,-IBU.imp.mean),x=IBU.imp.mean)) +
+  geom_boxplot(fill="pink",color="black") +
+  labs(y="Beer Class",x="International Bitterness Unit") +
+  ggtitle("International Bitterness Unit by class with imputed mean values") +
+  theme(axis.text.x = element_text(angle = 90))
+
+Imp_df_IBU
+#Boxplot of IBV with NA values
+Imp_df_ABV=ggplot(Full_data,aes(y=reorder(Class,-ABV.imp.mean),x=ABV.imp.mean)) +
+  geom_boxplot(fill="dark green",color="black") +
+  labs(y="Beer Class",x="Alcohol by Volume") +
+  ggtitle("Alcohol by Volume by class with imputed mean values") +
+  theme(axis.text.x = element_text(angle = 90))
+
+Imp_df_ABV
+```
+We found 62 null values in the ABV column and 1005 in the IBU column. Thinking the missing values would be close to the average, we replaced them with the averages of the present values.
+
+
+
+
+Compute and plot median alcohol content and international bitterness unit for each state.
+
+```{r}
+#compute medians
+Median_df_imp=Full_data%>%group_by(State)%>%summarise(median_ABV_imp=median(ABV.imp.mean), median_IBU_imp=median(IBU.imp.mean))
+Median_df_imp=as.data.frame(Median_df_imp)
+head(Median_df_imp)
+
+#plot medians for ABV without na values
+Median_df_ABV=ggplot(Median_df_imp,aes(x=reorder(State,-median_ABV_imp),y=median_ABV_imp)) +
+  geom_col(fill="sky blue",color="black") +
+  labs(x="US 51 States",y="Median Alcohol Content by Volume") +
+  ggtitle("Median Alcohol Content by Volume in each state") +
+  theme(axis.text.x = element_text(angle = 90))
+
+Median_df_ABV
+
+#plot medians for IBU without na values
+Median_df_IBU=ggplot(Median_df_imp,aes(x=reorder(State,-median_IBU_imp),y=median_IBU_imp)) +
+  geom_col(fill="pink",color="black") +
+  labs(x="US 51 States",y="Median International Bitterness Unit") +
+  ggtitle("International Bitterness Unit in each state") +
+  theme(axis.text.x = element_text(angle = 90))
+
+Median_df_IBU
+
+
+Median_df_imp
+
+```
+Here we see the median alcohol contents and international bitterness units for each state (including Washington, D.C.). Median alcohol content by volume doesn't appear to vary much by state, with most states having a median value between 0.05 and 0.06. Our chart for the median IBU reveals West Virginia as the state that produces the median most bitter beer.
+
+
+Which state has the maximum alcoholic beer, and which has the most bitter beer?
+```{r}
+max.abv =Full_data %>% filter(ABV==max(Full_data$ABV,na.rm=TRUE)) %>% select(Beer_Name,ABV,Class,Style,State,Brewery_Name)
+max.abv
+#Answer Colorado, Lee Hill Series Vol.5, ABV = 0.128, Upslope Brewing Company
+max.ibu = Full_data %>% filter(IBU==max(Full_data$IBU,na.rm=TRUE)) %>% select(Beer_Name,IBU,Class,Style,State,Brewery_Name)
+max.ibu
+#Answer Oregon, Bitter Bitch Imperial, IBU = 138
+
+
+```
+Colorado has the most alcoholic beer at 12.8%. Oregon has the most bitter beer at an IBU rating of 138, nearly four times the mean.
+
+
+
+Summary statistics
+```{r}
+#with NAs
+summary_ABV=summary(Full_data$ABV)#for ABV
+summary_ABV
+
+ABV_histogram = Full_data %>% ggplot(aes(x = ABV, fill=Class)) + 
+  geom_histogram( color = "black") + 
+  ggtitle("Distribution of ABV with NA values")+labs(y="Count", x="Alcohol By Volume")
+ABV_histogram
+
+#without NAs
+summary_imp_ABV=summary(Full_data$ABV.imp.mean)#for ABV
+summary_imp_ABV
+
+ABV_imp_histogram = Full_data %>% ggplot(aes(x = ABV.imp.mean, fill=Class)) + 
+  geom_histogram(color="black") + 
+  ggtitle("Distribution of ABV with imputed mean values instead of NA")+
+  labs(y="Count", x="Alcohol By Volume")
+ABV_imp_histogram
+
+```
+
+Our visual evidence suggests that the distribution of alcohol content by volume is slightly right skewed, but mostly normal. With our decision to replace the null values with the mean, only the median is affected of the summary statistics, and then only slightly.
+
+
+
+Is there a relationship between bitterness and alcohol content?
+
+```{r}
+#with NAs
+IBU_ABV=ggplot(Full_data,aes(x=ABV, y=IBU)) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  ggtitle("Relationship between ABV and IBU with NA values")+
+  labs(x="Alcohol By Volume",y="International Bitterness Unit")
+IBU_ABV
+
+#without NAs
+imp_IBU_ABV=ggplot(Full_data,aes(x=ABV.imp.mean, y=IBU.imp.mean)) +
+  geom_point() +
+  geom_smooth(method="lm") +
+  ggtitle("Relationship between ABV and IBU with imputed mean values")+
+  labs(x="Alcohol By Volume",y="International Bitterness Unit")
+imp_IBU_ABV
+
+lm_full_data=lm(IBU~ABV, Full_data)
+lm_full_data
+summary(lm_full_data)
+
+lm_full_data_imp=lm(IBU.imp.mean~ABV.imp.mean, Full_data)
+lm_full_data_imp
+summary(lm_full_data_imp)
+```
+There appears to be a positive relationship between alcohol content by volume and international bitterness units.This is true regardless of whether we use the imputed null values, though less of the IBU variability is explained by the alcohol content with the imputed values (45% vs. 27%). Perhaps this relationship is positive because many people find alcohol (ethanol) to be bitter.
+
+
+Investigate the difference between IPAs and other Ales
+
+```{r}
+Full_data["Class2"] = ifelse(str_detect(Full_data$Style,"IPA"),"IPA", 
+                      ifelse(str_detect(Full_data$Style,"Ale"),"Ale",
+                        ifelse(str_detect(Full_data$Style, "APA"), "Ale",
+                        NA
+                       )))
+
+just_ales = na.omit(Full_data, cols = c("Class2"))
+#head(just_ales)
+
+#knn classifier
+set.seed(877)
+iterations = 100
+numks = 60
+splitPerc = .70
+masterAcc = matrix(nrow = iterations, ncol = numks)
+masterSens = matrix(nrow = iterations, ncol = numks)
+masterSpec = matrix(nrow = iterations, ncol = numks)
+for(j in 1:iterations)
+{
+  accs = data.frame(accuracy = numeric(60), k = numeric(60))
+  trainIndices = sample(1:dim(just_ales)[1],round(splitPerc * dim(just_ales[1])))
+  train = just_ales[trainIndices,]
+  test = just_ales[-trainIndices,]
+  for(i in 1:numks)
+  {
+    classifications = knn(train[,c("IBU.imp.mean","ABV.imp.mean")],test[,c("IBU.imp.mean","ABV.imp.mean")],train$Class2, prob = TRUE, k = i)
+    table(classifications,test$Class2)
+    CM = confusionMatrix(table(classifications,test$Class))
+    masterAcc[j,i] = CM$overall[1]
+    masterSens[j,i] = mean(CM$byClass[1])
+    masterSpec[j,i] = mean(CM$byClass[2]) 
+  }
+  
+}
+
+
+MeanAcc = colMeans(masterAcc)
+MeanSens = colMeans(masterSens)
+MeanSpec = colMeans(masterSpec)
+
+
+#which is the best k
+which.max(MeanAcc)
+max(MeanAcc) #Accuracy with k=5
+
+MeanSens[5] #Sensitivity with k=5
+MeanSpec[5] #Specificity with k=5
+
+```
+!!!DRAW INSIGHTS FROM KNN
+Given ABV and IBU, our KNN model has over an 85% accuracy rate--that is the number of beers correctly classified as either IPA or other Ale. The model has a sensitivity of over 88%--that is of the Ales, over 88% were identified correctly. Finally, the model has a specificity of over 81%--that is, of the IPAs, over 81% were identified correctly.
+
+
+!!!EXTRA INSIGHTS
+
+```{r}
+Full_data %>% select(Class, Class2, IBU.imp.mean, ABV.imp.mean) %>% ggpairs(aes(color=Class))
+
+Full_data %>% select(Ounces, Class2, IBU.imp.mean, ABV.imp.mean) %>% ggpairs(aes(color=Class2))
+
+Full_data %>% ggplot(aes(fill = Class, x = IBU.imp.mean)) + geom_density()
+
+Full_data %>% ggplot(aes(fill = Class, x = ABV.imp.mean)) + geom_density()
+
+Full_data %>% ggplot(aes(color = Class2, x = Ounces, y = ABV.imp.mean)) + geom_point(position = "jitter")
+
+
+Full_data %>% group_by(Class) %>% summarise(total = n(), mean_abv = mean(ABV.imp.mean)) %>% arrange(mean_abv)
+
+```
+
+
+
+!!!CONCLUSION

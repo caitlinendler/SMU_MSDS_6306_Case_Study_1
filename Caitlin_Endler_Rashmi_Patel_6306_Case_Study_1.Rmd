@@ -370,10 +370,8 @@ Full_data %>% group_by(Class) %>% summarise(total = n(), mean_abv = mean(ABV.imp
 
 alcohol_cons = read.csv(file.choose())
 lookup = data.frame(abb = state.abb, State = state.name) #make a dataframe of state names and abbreviations
-#colnames(breweries2)[4] = "abb" #change column name
 alcohol_cons$State <- trimws(alcohol_cons$State, which = c("both")) #trim white space
 alcohol_cons2 = merge(alcohol_cons, lookup, by ="State") #merge datasets
-#breweries_mapdata = count(breweries3, State) #count occurance of each state
 colnames(alcohol_cons2)[2] = "Gallons" #change column name
 alcohol_cons2$Gallons = str_replace(alcohol_cons2$Gallons, "M",)
 alcohol_cons2$Gallons = as.numeric(alcohol_cons2$Gallons)

@@ -372,14 +372,16 @@ alcohol_cons = read.csv(file.choose())
 lookup = data.frame(abb = state.abb, State = state.name) #make a dataframe of state names and abbreviations
 alcohol_cons$State <- trimws(alcohol_cons$State, which = c("both")) #trim white space
 alcohol_cons2 = merge(alcohol_cons, lookup, by ="State") #merge datasets
-colnames(alcohol_cons2)[2] = "Gallons" #change column name
-alcohol_cons2$Gallons = str_replace(alcohol_cons2$Gallons, "M", "")
-alcohol_cons2$Gallons = as.numeric(alcohol_cons2$Gallons)
+colnames(alcohol_cons2)[3] = "Gallons" #change column name
+alcohol_cons2$Gallons = str_replace(alcohol_cons2$Gallons, "M", "") #remove M
+alcohol_cons2$Gallons = as.numeric(alcohol_cons2$Gallons) #make numeric
 alcohol_cons2$region <- tolower(alcohol_cons2$State) #create "region" column
 alcohol_cons2 = alcohol_cons2[-1] #remove states column
-nd = c(2, "nd", "north dakota")
-names(nd) = c("Gallons", "abb", "region")
-rbind(alcohol_cons2, nd)
+nd = c("47", 2, "ND", "north dakota") #add north dakota back in
+names(nd) = c("Rank", "Gallons", "abb", "region")
+alcohol_cons2 = rbind(alcohol_cons2, nd)
+alcohol_cons2 = alcohol_cons2[-1]
+alcohol_cons2$Gallons = as.numeric(alcohol_cons2$Gallons) #make numeric again
 
 states <- map_data("state")
 map.df <- merge(states, alcohol_cons2, by = "region", all.x = T)

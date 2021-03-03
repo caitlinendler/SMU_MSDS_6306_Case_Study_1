@@ -373,17 +373,21 @@ lookup = data.frame(abb = state.abb, State = state.name) #make a dataframe of st
 alcohol_cons$State <- trimws(alcohol_cons$State, which = c("both")) #trim white space
 alcohol_cons2 = merge(alcohol_cons, lookup, by ="State") #merge datasets
 colnames(alcohol_cons2)[2] = "Gallons" #change column name
-alcohol_cons2$Gallons = str_replace(alcohol_cons2$Gallons, "M",)
+alcohol_cons2$Gallons = str_replace(alcohol_cons2$Gallons, "M", "")
 alcohol_cons2$Gallons = as.numeric(alcohol_cons2$Gallons)
 alcohol_cons2$region <- tolower(alcohol_cons2$State) #create "region" column
 alcohol_cons2 = alcohol_cons2[-1] #remove states column
+nd = c(2, "nd", "north dakota")
+names(nd) = c("Gallons", "abb", "region")
+rbind(alcohol_cons2, nd)
+
 states <- map_data("state")
 map.df <- merge(states, alcohol_cons2, by = "region", all.x = T)
 map.df <- map.df[order(map.df$order),] #sort the data
 
 ggplot(map.df, aes(x=long, y=lat, group=group)) +
   geom_polygon(aes(fill=Gallons)) + geom_path() +
-  scale_fill_gradientn(colours=rev(heat.colors(10)),na.value="grey90") +
+  scale_fill_gradientn(colours=rev(hcl.colors(10, palette = "Emrld")),na.value="grey90") +
   ggtitle("Total Alcohol Consumption by State") +labs(x="Longitude", y="Latitude")
   coord_map()
 

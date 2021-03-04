@@ -401,9 +401,36 @@ Brew_df$State <- trimws(Brew_df$State, which = c("both"))
 #alcohol consumption per capita per brewery
 ac_pc_pb = merge(Brew_df, alcohol_cons2, by.x = "State", by.y = "abb")
 
-ac_pc_pb2 = ac_pc_pb %>% summarise(state = State, ac_pc_pb = Gallons/n())
+ac_pc_pb2 = ac_pc_pb %>% summarise(State = State, ac_pc_pb = Gallons/n())
 
 ac_pc_pb2
+
+#histogram
+ggplot(ac_pc_pb2,aes(x=reorder(as.factor(State),-ac_pc_pb), y=ac_pc_pb, fill=State))+geom_col()+
+  labs(x="US 50 States",y="Number of Breweries") +
+  ggtitle("Number of Breweries in each state") +
+  theme(axis.text.x = element_text(angle = 90))
+
+
+#heatmap
+lookup = data.frame(abb = state.abb, State = state.name) #make a dataframe of state names and abbreviations
+ac_pc_pb2$State <- trimws(ac_pc_pb2$State, which = c("both"))
+colnames(ac_pc_pb2)[1] = "abb"
+
+ac_pc_pb3 = merge(ac_pc_pb2, lookup, by = "abb") #merge datasets
+ac_pc_pb3$region <- tolower(ac_pc_pb3$State) #create "region" column
+
+ac_pc_pb3 = ac_pc_pb3 %>% select(abb, ac_pc_pb, region)
+
+states <- map_data("state")
+map.df <- merge(states, ac_pc_pb3, by = "region", all.x = T)
+map.df <- map.df[order(map.df$order),] #sort the data
+
+ggplot(map.df, aes(x=long, y=lat, group=group)) +
+  geom_polygon(aes(fill=ac_pc_pb)) + geom_path() +
+  scale_fill_gradientn(colours=rev(hcl.colors(10, palette = "Emrld")),na.value="grey90") +
+  ggtitle("Total Alcohol Consumption per Brewery by State") +labs(x="Longitude", y="Latitude")
+  coord_map()
 
 ```
 

@@ -107,6 +107,15 @@ Full_data%>%ggplot(aes(x = Class, fill=Class))+geom_bar()+
   ggtitle("Distribution of Beer Classes")+coord_flip()+xlab("Class of carft beers")+ylab("Count")
 
 
+total_beer=length(Full_data$Class)
+total_beer
+total_IPA=sum(str_detect(Full_data$Class, "IPA"))
+total_IPA
+total_Ale=sum(str_detect(Full_data$Class, "Ale"))
+total_Ale
+total_IPA_Ale=((total_Ale+total_IPA)/total_beer)*100
+total_IPA_Ale
+
 ```
 1)There are 100 different style of craft beers brewed in the United States.
 2)Classes of Beer have style variants, i.e., Ales include English Pale, Irish Red, etc.

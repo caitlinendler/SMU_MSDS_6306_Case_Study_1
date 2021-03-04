@@ -370,10 +370,12 @@ ac_pc_pb2 = ac_pc_pb %>% summarise(State = State, ac_pc_pb = Gallons/n())
 ac_pc_pb2
 
 #histogram
-ggplot(ac_pc_pb2,aes(x=reorder(as.factor(State),-ac_pc_pb), y=ac_pc_pb, fill=State))+geom_col()+
-  labs(x="US 50 States",y="Number of Breweries") +
-  ggtitle("Number of Breweries in each state") +
+ggplot(ac_pc_pb2,aes(x=reorder(as.factor(State),-ac_pc_pb), y=ac_pc_pb))+
+  geom_col(fill="dark green", color="black")+
+  labs(x="US States",y="Alcohol Consumption per brewery count") +
+  ggtitle("Alcohol consumption per brewey count in each state") +
   theme(axis.text.x = element_text(angle = 90))
+
 
 
 #heatmap

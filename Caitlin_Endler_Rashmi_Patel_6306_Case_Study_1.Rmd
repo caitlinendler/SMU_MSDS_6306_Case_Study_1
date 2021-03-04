@@ -394,7 +394,18 @@ ggplot(map.df, aes(x=long, y=lat, group=group)) +
   coord_map()
 
 ```
+```{r}
+alcohol_cons2$abb <- trimws(alcohol_cons2$abb, which = c("both"))
+Brew_df$State <- trimws(Brew_df$State, which = c("both"))
 
+#alcohol consumption per capita per brewery
+ac_pc_pb = merge(Brew_df, alcohol_cons2, by.x = "State", by.y = "abb")
+
+ac_pc_pb2 = ac_pc_pb %>% summarise(state = State, ac_pc_pb = Gallons/n())
+
+ac_pc_pb2
+
+```
 
 
 !!!CONCLUSION

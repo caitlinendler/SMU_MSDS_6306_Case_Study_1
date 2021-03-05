@@ -358,6 +358,31 @@ Given ABV and IBU, our KNN model has over an 85% accuracy rate--that is the numb
 
 
 !!!EXTRA INSIGHTS
+```{r}
+alcohol_cons = read.csv(file.choose())
+#lookup = data.frame(abb = state.abb, State = state.name) #make a dataframe of state names and abbreviations
+alcohol_cons$State <- trimws(alcohol_cons$State, which = c("both")) #trim white space
+alcohol_cons2 = merge(alcohol_cons, lookup, by ="State") #merge datasets
+colnames(alcohol_cons2)[3] = "Gallons" #change column name
+alcohol_cons2$Gallons = str_replace(alcohol_cons2$Gallons, "M", "") #remove M
+alcohol_cons2$Gallons = as.numeric(alcohol_cons2$Gallons) #make numeric
+alcohol_cons2$region <- tolower(alcohol_cons2$State) #create "region" column
+alcohol_cons2 = alcohol_cons2[-1] #remove states column
+nd = c("47", 2, "ND", "north dakota") #add north dakota back in
+names(nd) = c("Rank", "Gallons", "abb", "region")
+alcohol_cons2 = rbind(alcohol_cons2, nd)
+alcohol_cons2 = alcohol_cons2[-1]
+alcohol_cons2$Gallons = as.numeric(alcohol_cons2$Gallons) #make numeric again
+#states <- map_data("state")
+#map.df <- merge(states, alcohol_cons2, by = "region", all.x = T)
+#map.df <- map.df[order(map.df$order),] #sort the data
+#ggplot(map.df, aes(x=long, y=lat, group=group)) +
+#  geom_polygon(aes(fill=Gallons)) + geom_path() +
+#  scale_fill_gradientn(colours=rev(hcl.colors(10, palette = "Emrld")),na.value="grey90") +
+#  ggtitle("Total Alcohol Consumption by State") +labs(x="Longitude", y="Latitude")
+#  coord_map()
+
+```
 
 ```{r}
 Brew_df$State <- trimws(Brew_df$State, which = c("both"))
@@ -375,8 +400,6 @@ ggplot(ac_pc_pb2,aes(x=reorder(as.factor(State),-ac_pc_pb), y=ac_pc_pb))+
   labs(x="US States",y="Alcohol Consumption per brewery count") +
   ggtitle("Alcohol consumption per brewey count in each state") +
   theme(axis.text.x = element_text(angle = 90))
-
-
 
 #heatmap
 lookup = data.frame(abb = state.abb, State = state.name) #make a dataframe of state names and abbreviations

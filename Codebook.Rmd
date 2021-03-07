@@ -1,0 +1,144 @@
+---
+title: "SMU 6306-Doing Data Science Case Study 1(Spring 2021)"
+output:
+  html_document:
+    toc: yes
+    df_print: paged
+  html_notebook:
+    theme: spacelab
+    toc: yes
+    toc_folat: yes
+---
+
+
+
+# Project Description
+
+The purpose of this project is to study a dataset of 2410 beers produced by 558 
+breweries in the United States.  We have data on the style, ABV (alcohol by volume)
+and IBU (international bitterness units) of each beer, and we have the city
+and state for each brewery.  The goal is to answer some specific questions 
+about the data and to look for relationships or inferences which may be of
+interest to a sponsor, Budweiser.
+
+# Load Packages {.tabset}
+
+These are all the packages that are used in the project to analyze the data and perform the agenda that were asked by the client.
+
+## tidyverse
+```{r}
+#check if tidyverse is already installed or not and if it is, then load it.
+if(!require(tidyverse))
+  #If it is not installed. then tell R to install it.
+  install.packages("tidyverse", dependencies = TRUE)
+#Once it is installed, tell R to load it.
+library(tidyverse)
+```
+## maps
+```{r}
+#check if maps is already installed or not and if it is, then load it.
+if(!require(maps))
+  #If it is not installed. then tell R to install it.
+  install.packages("maps", dependencies = TRUE)
+#Once it is installed, tell R to load it.
+library(maps)
+```
+## caret
+```{r}
+#check if caret is already installed or not and if it is, then load it.
+if(!require(caret))
+  #If it is not installed. then tell R to install it.
+  install.packages("caret", dependencies = TRUE)
+#Once it is installed, tell R to load it.
+library(caret)
+```
+## class
+```{r}
+#check if class is already installed or not and if it is, then load it.
+if(!require(class))
+  #If it is not installed. then tell R to install it.
+  install.packages("class", dependencies = TRUE)
+#Once it is installed, tell R to load it.
+library(class)
+```
+
+# Study design and data processing
+
+## Collection of the raw data
+Data was provided by the client in two text .csv files.
+1) Beers.csv
+2) Breweries.csv
+
+## Notes on the original (raw) data 
+Beers.csv
+2410 Observations.  
+Name: Name of the beer.   
+Beer_ID: Unique identifier of the beer.  
+ABV: Alcohol by volume of the beer.  
+IBU: International Bitterness Units of the beer.  
+Brewery_ID: Brewery id associated with the beer.  
+Style: Style of the beer.  
+Ounces: Ounces of beer.  
+
+Breweries.csv:  
+558 Observations.  
+Brew_ID: Unique identifier of the brewery.  
+Name: Name of the brewery.  
+City: City where the brewery is located.  
+State: U.S. State where the brewery is located.  
+
+# Description of the variables in the merged dataset
+
+## Beer_name  
+Name of the beer.   
+
+## Beer_ID
+Integer id number to uniquely identify each beer.
+
+## ABV
+Alcohol by volume (expressed as decimal fraction).
+
+## IBU
+International Bitterness Units of the beer (an integer).
+
+## Brew_ID
+Integer id number to uniquely identify the brewery which produced the beer.
+
+## Style
+Character string stored as a factor with 100 distinct values.
+
+## Ounces
+Serving size in ounces, represented as integer.
+
+## Brewery_name
+Character string stored as a factor with 551 distinct values.
+
+## City
+Character string stored as a factor with 384 distinct values.
+
+## State
+Two Character string stored as a factor with 51 distinct values.
+
+# For finding some extra useful insights
+
+## Collection of external data.
+
+A new csv named "Alcohol_consumption.csv" is used having alcohol consumption per brewery Count.
+
+## Notes on the external data
+Alcohol_consumption.csv
+51 observations
+Rank: The ranks are assigned to each state according to highest to lowest consumption
+State: State Name
+Gallons Overall: The values given are in Millions
+
+# Description of the variables in the merged dataset
+
+## Rank
+Integer id number to uniquely identify the rank of each state.
+
+## State
+Character string containing the state name
+
+## Overall Gallons
+Integer variable that has values in million gallons

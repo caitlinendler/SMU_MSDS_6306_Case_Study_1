@@ -11,6 +11,5 @@ interest to a hypothetical sponsor, Budweiser.
 
 Codebook  
 
-The codebook contains information on the data used in this project--
-where the data came from and what the variables represent.
+The codebook contains information on the data used in this project--where the data came from and what the variables represent.
 
